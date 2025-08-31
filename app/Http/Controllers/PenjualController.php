@@ -25,6 +25,16 @@ class PenjualController extends Controller
         return response()->json($data);
     }
 
+    public function details($lokasi)
+    {
+        $data = Penjual::where('lokasi', $lokasi)->firstOrFail();
+        
+        return response()->json([
+            'message' => 'Data penjual ditemukan',
+            'data' => $data
+        ], 200);
+    }
+
     // Admin membuat data penjual untuk user tertentu (user harus bertipe seller).
     // Seller tidak boleh membuat penjual baru.
     public function store(Request $request)
@@ -152,5 +162,58 @@ class PenjualController extends Controller
     {
         $penjual = Penjual::where('user_id', Auth::id())->firstOrFail();
         return $this->update($request, $penjual->id);
+    }
+
+    public function updateDenahSVG(Request $request) 
+    {
+        $user = Auth::user();
+    
+        if ($user->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+    
+        $request->validate([
+            'denah_svg' => 'required|mimes:svg|max:2048', // max 2MB atau lbih ya
+        ]);
+        
+        if ($request->hasFile('denah_svg')) {
+            // Buat folder jika belum ada
+            Storage::disk('public')->makeDirectory('denah');
+            
+            // Hapus file lama jika ada
+            if (Storage::disk('public')->exists('denah/pasar-owi.svg')) {
+                Storage::disk('public')->delete('denah/pasar-owi.svg');
+            }
+            
+            // Simpan file nama pasar-owi.svg
+            $path = $request->file('denah_svg')->storeAs(
+                'denah', 
+                'pasar-owi.svg', 
+                'public'
+            );
+            
+            // Update path di database
+            // $penjual->update(['denah_svg' => $path]); gausah ah aha aahah
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Denah SVG berhasil diupload',
+                'path' => Storage::url($path)
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Tidak ada file yang diupload'
+        ]);
+    }
+
+    public function getDenahSVG()
+    {
+            return response()->json([
+            'success' => true,
+            'svg' => Storage::disk('public')->get('denah/pasar-owi.svg'),
+            'url' => Storage::url('denah/pasar-owi.svg'),
+        ]);
     }
 }

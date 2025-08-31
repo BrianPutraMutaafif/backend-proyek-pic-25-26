@@ -92,7 +92,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login berhasil',
             'token' => $token,
-            'user' => $user
+            'role' => $user->role,
         ]);
     }
 
@@ -101,5 +101,20 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
         return response()->json(['message' => 'Logout berhasil']);
+    }
+
+    // Get authenticated user profile
+    public function profile(Request $request)
+    {
+        //Biar gampang pas frontend request ror
+        $user = $request->user();
+        
+        return response()->json([
+            'id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'role' => $user->role,
+            'created_at' => $user->created_at
+        ]);
     }
 }
