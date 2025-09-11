@@ -60,16 +60,6 @@ class AuthController extends Controller
     }
 
 
-    // public function tampillogin()
-    // {
-    //     return view('login');
-    // }
-
-    // public function tampilwelcome()
-    // {
-    //     return redirect('/');
-    // }
-
     // Login: terima field 'login' (username atau email) + password
     public function login(Request $request)
     {
@@ -108,12 +98,14 @@ class AuthController extends Controller
     {
         //Biar gampang pas frontend request ror
         $user = $request->user();
+        $penjual = Penjual::find(1);
         
         return response()->json([
             'id' => $user->id,
             'username' => $user->username,
             'email' => $user->email,
             'role' => $user->role,
+            'penjualId' => $penjual->id,
             'created_at' => $user->created_at
         ]);
     }
